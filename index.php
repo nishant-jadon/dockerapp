@@ -18,10 +18,7 @@
 <body>
 	<img id="logo" src="logo.png" />
 	<h1 style="color:red;"> Hello Prasen !! </h1>
-        <h1 style="color:blue;"> Keep walk .... </h1>
-	
-	<?php if($_ENV["HOSTNAME"]) {?><h3>My hostname is <?php echo $_ENV["HOSTNAME"]; ?></h3><?php } ?>
-	
+        <h1 style="color:blue;"> Keep walk .... </h1>	
 	<h3>My hostname is <?php echo gethostname(); ?></h3>
 </body>
 </html>
