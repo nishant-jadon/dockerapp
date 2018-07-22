@@ -4,32 +4,35 @@ node{
           branch:'master'
   }
   stage('Build Docker Image'){
-    sh 'docker build -t ocp-dev/my-app:0.0.1 .'
+    sh 'docker build -t 10.90.1.78/ocp-dev/my-app:0.0.1 .'
   }
+  stage('Test Image upload to Harbor Registry'){
+    withCredentials([string(credentialsId: 'harbor-passwd', variable: 'harborRegistryPwd')]) {
+       sh "docker login 10.90.1.78 -u prasen -p ${harborRegistryPwd}"
+    }
+    sh 'docker push 10.90.1.78/ocp-dev/my-app:0.0.1'
+  }
+  stage('Docker Image Scan'){
+    sh '''
+        export CLAIR_IMAGE=10.90.1.78/ocp-dev/my-app:0.0.1
+        export CLAIR_HOST=http://10.90.1.78:6060
 
-  stage('Upload Image to DockerHub'){
-    withCredentials([string(credentialsId: 'docker-hub', variable: 'password')]) {
-      sh "docker login 10.90.1.78 -u prasen -p ${password}"
-    }
-    sh 'docker push ocp-dev/my-app:0.0.1'
-  }
-  stage('Remove Old Containers'){
-    sshagent(['my-app-dev']) {
-      try{
-        def sshCmd = 'ssh -o StrictHostKeyChecking=no ec2-user@172.31.18.198'
-        def dockerRM = 'docker rm -f my-app'
-        sh "${sshCmd} ${dockerRM}"
-      }catch(error){
+        HIGH=$(REGISTRY_INSECURE=true CLAIR_ADDR=$CLAIR_HOST /usr/local/bin/klar $CLAIR_IMAGE | tail -n 7 | grep High | awk \'{print$2}\')
+        echo $HIGH
 
-      }
-    }
+        if [[ $HIGH < 1 ]]; then
+          echo "+++Image $CLAIR_IMAGE has passed scan threshold+++"
+          docker tag 10.90.1.78/ocp-dev/my-app:0.0.1 10.90.1.78/ocp-dev/my-app:latest
+        else
+          echo "---Image $CLAIR_IMAGE has failed scan threshold+++"
+          docker rmi 10.90.1.78/ocp-dev/my-app:0.0.1
+          exit 1
+        fi'''
   }
-  stage('Deploy-Dev'){
-    sshagent(['my-app-dev']) {
-      input 'Deploy  to Dev?'
-      def sshCmd = 'ssh -o StrictHostKeyChecking=no ec2-user@172.31.18.198'
-      def dockerRun = 'docker run -d -p 8080:8080 --name my-app kammana/my-app:0.0.1'
-      sh "${sshCmd} ${dockerRun}"
+  stage('Latest Image upload to Harbor Registry'){
+    withCredentials([string(credentialsId: 'harbor-passwd', variable: 'harborRegistryPwd')]) {
+       sh "docker login 10.90.1.78 -u prasen -p ${harborRegistryPwd}"
     }
+    sh 'docker push 10.90.1.78/ocp-dev/my-app:latest'
   }
 }
