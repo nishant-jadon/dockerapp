@@ -9,7 +9,7 @@ node{
 
   stage('Upload Image to DockerHub'){
     withCredentials([string(credentialsId: 'docker-hub', variable: 'password')]) {
-      sh "docker login -u prasen -p ${password}"
+      sh "docker login 10.90.1.78 -u prasen -p ${password}"
     }
     sh 'docker push ocp-dev/my-app:0.0.1'
   }
