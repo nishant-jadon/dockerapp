@@ -1,6 +1,6 @@
 node{
   stage('Git Checkout'){
-      git url: 'https://github.com/javahometech/my-app',
+      git url: 'https://github.com/prasenforu/dockerapp',
           branch:'master'
   }
   stage('MVN Package'){
@@ -8,12 +8,12 @@ node{
     sh "${mvnHome}/bin/mvn clean package"
   }
   stage('Build Docker Image'){
-    sh 'docker build -t kammana/my-app:0.0.1 .'
+    sh 'docker build -t ocp-dev/my-app:0.0.1 .'
   }
 
   stage('Upload Image to DockerHub'){
     withCredentials([string(credentialsId: 'docker-hub', variable: 'password')]) {
-      sh "docker login -u kammana -p ${password}"
+      sh "docker login -u prasen -p ${password}"
     }
     sh 'docker push kammana/my-app:0.0.1'
   }
