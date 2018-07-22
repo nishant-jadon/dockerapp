@@ -3,10 +3,6 @@ node{
       git url: 'https://github.com/prasenforu/dockerapp',
           branch:'master'
   }
-  stage('MVN Package'){
-    def mvnHome = tool name: 'maven-3', type: 'maven'
-    sh "${mvnHome}/bin/mvn clean package"
-  }
   stage('Build Docker Image'){
     sh 'docker build -t ocp-dev/my-app:0.0.1 .'
   }
@@ -15,7 +11,7 @@ node{
     withCredentials([string(credentialsId: 'docker-hub', variable: 'password')]) {
       sh "docker login -u prasen -p ${password}"
     }
-    sh 'docker push kammana/my-app:0.0.1'
+    sh 'docker push ocp-dev/my-app:0.0.1'
   }
   stage('Remove Old Containers'){
     sshagent(['my-app-dev']) {
