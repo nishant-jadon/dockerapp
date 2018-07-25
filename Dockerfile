@@ -5,7 +5,8 @@
 #FROM webdevops/php-nginx
 #FROM php
 #FROM php:5.6-fpm-alpine
-FROM php:7.0-apache
+#FROM php:7.0-apache
+FROM tutum/apache-php
 ADD index.php /www/index.php
 ADD index.php /var/www/index.php
 ADD pk_logo.PNG /var/www/logo.png
